@@ -1,5 +1,10 @@
 import { Readable } from 'stream';
-import { createPool, Pool, Options as PoolOptions, Factory as PoolFactory } from 'generic-pool';
+import {
+  createPool,
+  Pool,
+  Options as PoolOptions,
+  Factory as PoolFactory,
+} from 'generic-pool';
 import puppeteer, { Browser, Page, PDFOptions } from 'puppeteer';
 
 interface PageInstance {
@@ -56,16 +61,14 @@ export class PdfGenerator {
 
   async stop() {
     await this.pagesPool.drain();
-    await this.pagesPool.clear()
+    await this.pagesPool.clear();
   }
 
   async awaitPool() {
     return this.pagesPool.ready();
   }
 
-  generatePDF(
-      htmlOrUrl: string | URL,
-  ): Promise<Buffer>;
+  generatePDF(htmlOrUrl: string | URL): Promise<Buffer>;
   generatePDF(
     htmlOrUrl: string | URL,
     stream: undefined,
@@ -122,24 +125,27 @@ export class PdfGenerator {
 
     try {
       let released = false;
-      return (await page.page.createPDFStream(options)).once('error', () => {
-        if (!released) {
-          released = true;
-          this.pagesPool.destroy(page).catch(() => {});
-        }
-      }).once('close', () => {
-        if (!released) {
-          released = true;
-          this.pagesPool.release(page).catch(() => {});
-        }
-      }).once('end', () => {
-        if (!released) {
-          released = true;
-          this.pagesPool.release(page).catch(() => {});
-        }
-      });
+      return (await page.page.createPDFStream(options))
+        .once('error', () => {
+          if (!released) {
+            released = true;
+            this.pagesPool.destroy(page).catch(() => undefined);
+          }
+        })
+        .once('close', () => {
+          if (!released) {
+            released = true;
+            this.pagesPool.release(page).catch(() => undefined);
+          }
+        })
+        .once('end', () => {
+          if (!released) {
+            released = true;
+            this.pagesPool.release(page).catch(() => undefined);
+          }
+        });
     } catch (e) {
-      await this.pagesPool.destroy(page).catch(() => {});
+      await this.pagesPool.destroy(page).catch(() => undefined);
       throw e;
     }
   }

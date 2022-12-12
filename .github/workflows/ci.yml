@@ -1,4 +1,4 @@
-name: CI/CD
+name: CI
 
 on:
   push:
@@ -25,10 +25,14 @@ jobs:
           HPDF_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           npm ci
+          npm run lint
           npm run build
           npm run test
 
       - name: Publish
+        if: github.ref == 'refs/heads/master'
         uses: JS-DevTools/npm-publish@v1
+        env:
+          HPDF_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         with:
           token: ${{ secrets.NPM_TOKEN }}

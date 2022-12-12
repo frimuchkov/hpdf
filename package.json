@@ -1,11 +1,12 @@
 {
   "name": "hpdf",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "NodeJS library for generation PDF from HTML",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "lint": "eslint \"src/**/*.ts\"",
     "format": "eslint \"src/**/*.ts\" --fix",
     "test": "jest"
   },
