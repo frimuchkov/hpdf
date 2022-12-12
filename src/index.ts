@@ -13,10 +13,11 @@ interface PageInstance {
 }
 
 class PageFactory implements PoolFactory<PageInstance> {
+  constructor(protected puppeteerArgs?: string[]) {}
   async create(): Promise<PageInstance> {
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: this.puppeteerArgs || ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
     return {
@@ -49,10 +50,14 @@ export class PdfGenerator {
 
   /**
    * @param poolConfig https://github.com/coopernurse/node-pool/blob/1c5cb79dcbea27c4b1839bd75bfc41274adb8b94/lib/PoolOptions.js#L5
+   * @param puppeteerArgs https://peter.sh/experiments/chromium-command-line-switches/
    */
-  constructor(poolConfig: PoolOptions = { min: 1, max: 10 }) {
-    this.pagesPool = createPool(new PageFactory(), {
-      testOnReturn: true, // Should the pool validate resources before returning them to the pool
+  constructor(
+    poolConfig: PoolOptions = { min: 1, max: 10 },
+    puppeteerArgs?: string[],
+  ) {
+    this.pagesPool = createPool(new PageFactory(puppeteerArgs), {
+      testOnBorrow: true, // Should the pool validate resources before giving them to clients
       evictionRunIntervalMillis: 5000,
       ...poolConfig,
       autostart: true,

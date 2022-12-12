@@ -1,6 +1,6 @@
 {
   "name": "hpdf",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "NodeJS library for generation PDF from HTML",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

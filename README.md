@@ -4,22 +4,19 @@
 [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
 
-## About
+NodeJS's library for generating PDF from HTML with pool of browsers (puppeteer) in the background.
 
-NodeJS library for generating PDF from HTML with pool of browsers (puppeteer) in the background.
-
-## Why?
 There are enough NodeJS libraries to generate PDF from HTML.
 Why do you need another one?
 - There is no up-to-date libraries.
 - There is no libraries with pool (but we have to use pooling when we are talking about browser in the background)
 
-## Features:
+### Features:
 - Configurable pool of pages (as resources) in the background
 - Fully tested
 - Written in TypeScript
 
-## How it works
+### How it works
 ![](diagram.png)
 
 ## Table of Contents
@@ -56,6 +53,36 @@ const start = async () => {
 
     await generator.stop();
 }
+```
+
+Before using puppeteer you have to install an [additional libs](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#running-puppeteer-in-docker):
+```dockerfile
+FROM node:16-alpine AS base
+
+# Installs latest Chromium (89) package.
+RUN apk add --no-cache \
+      chromium \
+      nss \
+      freetype \
+      harfbuzz \
+      ca-certificates \
+      ttf-freefont
+
+# Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+WORKDIR /app
+
+COPY . .
+
+RUN npm ci
+RUN npm run build
+RUN npm ci --omit=dev
+
+
+RUN apk add --no-cache tini
+ENTRYPOINT ["/sbin/tini", "--"]
 ```
 
 ## Maintainers
