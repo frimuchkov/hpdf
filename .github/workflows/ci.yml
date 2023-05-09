@@ -10,13 +10,12 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3
 
       - name: Setup Node v16
-        uses: actions/setup-node@v2.1.5
+        uses: actions/setup-node@v3
         with:
           node-version: 16
 
@@ -29,10 +28,36 @@ jobs:
           npm run build
           npm run test
 
+
+  publish:
+    runs-on: ubuntu-latest
+    if: ${{ success() && github.ref == 'refs/heads/master' }}
+    needs: [ 'test' ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node v16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
       - name: Publish
-        if: github.ref == 'refs/heads/master'
-        uses: JS-DevTools/npm-publish@v1
+        uses: JS-DevTools/npm-publish@v2
         env:
           HPDF_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         with:
           token: ${{ secrets.NPM_TOKEN }}
+
+      - if: ${{ steps.publish.outputs.type }}
+        name: Build Changelog
+        id: github_release
+        uses: mikepenz/release-changelog-builder-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - if: ${{ steps.publish.outputs.type }}
+        name: Create Release
+        uses: mikepenz/release-changelog-builder-action@v3.7.2
+        with:
+          body: ${{steps.github_release.outputs.changelog}}
