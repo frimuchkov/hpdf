@@ -16,7 +16,7 @@ class PageFactory implements PoolFactory<PageInstance> {
   constructor(protected puppeteerArgs?: string[]) {}
   async create(): Promise<PageInstance> {
     const browser = await puppeteer.launch({
-      headless: true,
+      headless: 'new',
       args: this.puppeteerArgs || ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
